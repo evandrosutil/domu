@@ -26,7 +26,8 @@ function ExpenseForm({ onExpenseAdded }) {
         };
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/expenses/', expenseData);
+            const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/expenses/`;
+            const response = await axios.post(apiUrl, expenseData);
 
             onExpenseAdded(response.data);
 

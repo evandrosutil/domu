@@ -11,7 +11,8 @@ function App() {
   const fetchExpenses = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://127.0.0.1:8000/api/expenses/');
+      const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/expenses/`;
+      const response = await axios.get(apiUrl);
       setExpenses(response.data);
       setError(null);
     } catch (err) {
