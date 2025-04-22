@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import './App.css';
 import ExpenseForm from './ExpenseForm';
+import Dashboard from './Dashboard';
 
 function App() {
   const [expenses, setExpenses] = useState([]);
@@ -58,6 +59,8 @@ function App() {
         ) : (
           <p>Nenhuma despesa registrada ainda.</p>
         )}
+        <h2>Resumo de despesas</h2>
+        <Dashboard />
       </header>
     </div>
   );
