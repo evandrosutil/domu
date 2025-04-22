@@ -21,7 +21,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: Run Django Backend Tests
-        run: pytest backend/
+        run: python -m pytest backend/
 
   frontend-tests:
     runs-on: ubuntu-latest
