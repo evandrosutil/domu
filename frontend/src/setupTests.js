@@ -4,4 +4,4 @@
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
 
-process.env.REACT_APP_API_BASE_URL = 'http://mockapi.test/api';.
+process.env.REACT_APP_API_BASE_URL = 'http://mockapi.test/api';
