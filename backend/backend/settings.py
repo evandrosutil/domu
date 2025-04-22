@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
+import django_heroku
+import os
 
 from pathlib import Path
 
@@ -25,7 +27,10 @@ SECRET_KEY = 'django-insecure-vc(dwt!!8y(tu&lupzzq=@1#yr@2q#%b*3@@@!yo^8em**ttfg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+APP_NAME = os.environ.get('HEROKU_APP_NAME')
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+if APP_NAME:
+    ALLOWED_HOSTS.append(f"{APP_NAME}.herokuapp.com")
 
 
 # Application definition
@@ -129,3 +134,6 @@ CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
 ]
+
+# Needs to be at the very EOF!!
+django_heroku.settings(locals())
