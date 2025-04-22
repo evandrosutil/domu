@@ -133,7 +133,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
+        "https://domu-two.vercel.app/"
 ]
+
+# CORS_ALLOWED_ORIGIN_REGEXES = [
+#    r"^https://domu\w+\.vercel\.app$",
+# ]
 
 # Needs to be at the very EOF!!
 django_heroku.settings(locals())
