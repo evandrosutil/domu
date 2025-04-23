@@ -11,6 +11,10 @@ class ExpenseListCreateAPIView(generics.ListCreateAPIView):
     queryset = Expense.objects.all().order_by("-date")
     serializer_class = ExpenseSerializer
 
+class ExpenseRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Expense.objects.all()
+    serializer_class = ExpenseSerializer
+
 class ExpenseSummaryView(APIView):
     def get(self, request, format=None):
         summary = Expense.objects \
