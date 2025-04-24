@@ -96,8 +96,19 @@ function ExpenseListPage() {
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {expenses.map(expense => (
             <li key={expense.id} style={{ borderBottom: '1px solid #eee', padding: '10px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div> {/* Div para agrupar texto */}
-                <strong>{expense.description}</strong> - R$ {parseFloat(expense.amount).toFixed(2)} - {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+              <div>
+                <strong>{expense.description}</strong>
+                {expense.category_name && (
+                  <span style={{ fontStyle: 'italic', marginLeft: '8px', color: '#555' }}>
+                    (Categoria: {expense.category_name})
+                  </span>
+                )}
+                <span style={{ marginLeft: '8px' }}>
+                - R$ {parseFloat(expense.amount).toFixed(2)} 
+                </span>
+                <span style={{ marginLeft: '8px' }}>
+                - {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
+                </span>
               </div>
               <div>
                 <button

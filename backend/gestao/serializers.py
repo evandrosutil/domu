@@ -8,10 +8,18 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ExpenseSerializer(serializers.ModelSerializer):
 
-    category_name = serializers.StringRelatedField(source="category", read_only=True), 
+    category_name = serializers.StringRelatedField(source="category", read_only=True)
+
     class Meta:
         model = Expense
-        fields = ["id", "description", "amount", "date", "category"]
+        fields = [
+            "id", 
+            "description", 
+            "amount", 
+            "date", 
+            "category", 
+            "category_name"
+        ]
 
         extra_kwargs = {
             "category": {"required": False, "allow_null": True}
