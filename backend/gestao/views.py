@@ -8,13 +8,17 @@ from .models import Expense, Category
 from .serializers import ExpenseSerializer, CategorySerializer
 
 
-class CategoryListView(generics.ListAPIView):
+class CategoryListCreateView(generics.ListCreateAPIView):
     """
-    API View to list (GET) all available categories.
+    API View to list (GET) and create (POST) categories.
     """
     queryset = Category.objects.all().order_by('name')
     serializer_class = CategorySerializer
     # pagination_class = None
+
+class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
 
 class ExpenseListCreateAPIView(generics.ListCreateAPIView):
     queryset = Expense.objects.all().order_by("-date")
