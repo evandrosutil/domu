@@ -4,8 +4,17 @@ from rest_framework.response import Response
 from django.db.models import Sum
 from django.db.models.functions import TruncMonth
 
-from .models import Expense
-from .serializers import ExpenseSerializer
+from .models import Expense, Category
+from .serializers import ExpenseSerializer, CategorySerializer
+
+
+class CategoryListView(generics.ListAPIView):
+    """
+    API View to list (GET) all available categories.
+    """
+    queryset = Category.objects.all().order_by('name')
+    serializer_class = CategorySerializer
+    # pagination_class = None
 
 class ExpenseListCreateAPIView(generics.ListCreateAPIView):
     queryset = Expense.objects.all().order_by("-date")
