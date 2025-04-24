@@ -95,12 +95,28 @@ function Dashboard() {
   };
 
   return (
-    <div style={{ marginTop: '30px', padding: '20px', borderTop: '1px solid #eee' }}>
-      <h2>Dashboard - Análise de Dados</h2>
+    <div style={{
+      marginTop: '30px',
+      padding: '20px', // Manter padding? Ajuste se necessário
+      borderTop: '1px solid #eee',
+      width: '100%', // Garante que ele ocupe a largura disponível
+      boxSizing: 'border-box',
+      display: 'flex', // <<< Usa Flexbox
+      flexDirection: 'column', // Empilha H2 (se voltar) e gráfico
+      alignItems: 'center' // <<< Centraliza itens (o container do gráfico)
+    }}>
+      <h2>Dashboard</h2>
       {loading && <p>Carregando resumo...</p>}
       {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
       {summaryData && summaryData.labels.length > 0 ? (
-         <div style={{ position: 'relative', height: '400px', width: '80%', margin: 'auto' }}>
+        <div style={{
+           position: 'relative', // Mantém para responsividade do Chart.js
+           height: '400px',       // Altura fixa
+           width: '90%',         // Largura alta, mas não 100% direto
+           maxWidth: '800px',    // Limite máximo de largura (evita ficar gigante em telas grandes)
+           // margin: 'auto' não é mais necessário com flex align-items: center no pai
+           // border: '2px solid red' // <<< REMOVA A BORDA DE DEBUG
+         }}>
            <Bar options={chartOptions} data={chartData} />
          </div>
       ) : (
