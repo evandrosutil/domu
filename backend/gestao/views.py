@@ -1,8 +1,8 @@
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Sum
-from django.db.models.functions import TruncMonth
+from django.db.models import Sum, Value
+from django.db.models.functions import TruncMonth, Coalesce
 
 from .models import Expense, Category
 from .serializers import ExpenseSerializer, CategorySerializer
@@ -25,19 +25,47 @@ class ExpenseRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
     serializer_class = ExpenseSerializer
 
 class ExpenseSummaryView(APIView):
+    """
+    API View that retrieves expense summary:
+    - Total by month
+    - Total by category
+    """
     def get(self, request, format=None):
-        summary = Expense.objects \
+        monthly_summary_query = Expense.objects \
             .annotate(month=TruncMonth('date')) \
             .values('month') \
             .annotate(total=Sum('amount')) \
             .values('month', 'total') \
             .order_by('month')
 
-        labels = [item['month'].strftime('%Y-%m') for item in summary]
-        totals = [item['total'] or 0 for item in summary]
+        monthly_labels = [item['month'].strftime('%Y-%m') for item in monthly_summary_query]
+        monthly_totals = [item['total'] or 0 for item in monthly_summary_query]
 
-        data = {
-            'labels': labels,
-            'totals': totals
+        monthly_summary_data = {
+            'labels': monthly_labels,
+            'totals': monthly_totals
         }
-        return Response(data)
+
+        category_summary_query = Expense.objects \
+            .annotate(
+                category_name_agg=Coalesce('category__name', Value('Sem Categoria'))
+            ) \
+            .values('category_name_agg') \
+            .annotate(total=Sum('amount')) \
+            .values('category_name_agg', 'total') \
+            .order_by('-total')
+
+        category_labels = [item['category_name_agg'] for item in category_summary_query]
+        category_totals = [item['total'] or 0 for item in category_summary_query]
+
+        category_summary_data = {
+            'labels': category_labels,
+            'totals': category_totals
+        }
+
+        combined_data = {
+            'monthly_summary':  monthly_summary_data,
+            'category_summary': category_summary_data
+        }
+            
+        return Response(combined_data)
