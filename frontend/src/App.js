@@ -5,6 +5,7 @@ import './App.css';
 import HomePage from './HomePage';
 import ExpenseListPage from './ExpenseListPage';
 import DashboardPage from './DashboardPage';
+import CategoryManagementPage from './CategoryManagementPage';
 
 function App() {
 
@@ -13,6 +14,7 @@ function App() {
       <nav style={{ padding: '10px 20px', background: '#f0f0f0', marginBottom: '20px', textAlign: 'left' }}>
         <Link to="/" style={{ marginRight: '15px', textDecoration: 'none' }}>Home</Link>
         <Link to="/expenses" style={{ marginRight: '15px', textDecoration: 'none' }}>Despesas</Link>
+        <Link to="/categories" sytle={{ marginRight: '15px', textDecoration: 'none' }}>Categorias</Link>
         <Link to="/dashboard" style={{ marginRight: '15px', textDecoration: 'none' }}>Dashboard</Link>
       </nav>
 
@@ -21,6 +23,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/expenses" element={<ExpenseListPage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/categories" element={<CategoryManagementPage />} />
 
           <Route path="*" element={
             <main style={{ padding: "1rem" }}>
