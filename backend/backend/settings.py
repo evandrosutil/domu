@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'gestao',
     'rest_framework',
     'corsheaders',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -139,6 +140,15 @@ CORS_ALLOWED_ORIGINS = [
 # CORS_ALLOWED_ORIGIN_REGEXES = [
 #    r"^https://domu\w+\.vercel\.app$",
 # ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+         'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
 
 # Needs to be at the very EOF!!
 django_heroku.settings(locals())
