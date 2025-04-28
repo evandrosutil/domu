@@ -18,7 +18,6 @@ function CategoryManagementPage() {
     fetchCategories();
   }, [fetchCategories]);
 
-  // <<< --- NOVA: Função para lidar com o submit do form de Adição --- >>>
   const handleAddCategorySubmit = async (event) => {
     event.preventDefault(); // Impede recarregamento da página
     setAddError(null); // Limpa erros anteriores de adição
@@ -50,6 +49,41 @@ function CategoryManagementPage() {
       setAddLoading(false);
     }
   };
+
+  const handleDeleteCategory = async (categoryId, categoryName) => {
+    if (window.confirm(`Tem certeza que deseja excluir a categoria "${categoryName}" (ID: ${categoryId})? \n\nAVISO: Despesas que usam esta categoria ficarão sem categoria (SET NULL).`)) {
+
+    try {
+      const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/categories/${categoryId}/`;
+      console.log(`Chamando DELETE para: ${apiUrl}`); // Log para debug
+
+      const response = await axios.delete(apiUrl);
+
+      if (response.status === 204) {
+        console.log(`Categoria ${categoryId} excluída com sucesso.`); // Log
+        setCategories(prevCategories =>
+          prevCategories.filter(cat => cat.id !== categoryId)
+        );
+      } else {
+        console.warn(`API retornou status ${response.status} para exclusão da categoria ${categoryId}`);
+        setError(`Recebido status inesperado ${response.status} ao excluir categoria.`);
+      }
+
+    } catch (err) {
+      console.error(`Erro ao excluir categoria ${categoryId}:`, err.response || err);
+      let errorMsg = `Falha ao excluir categoria "${categoryName}".`;
+      if (err.response?.data && typeof err.response.data === 'object') {
+          try {
+              errorMsg += ' Detalhes: ' + Object.entries(err.response.data).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`).join('; ');
+          } catch (e) { errorMsg += ' Detalhes: ' + JSON.stringify(err.response.data); }
+      } else if (err.response?.data) { errorMsg += ' Detalhes: ' + err.response.data; }
+      setError(errorMsg);
+    } finally {
+    }
+  } else {
+    console.log(`Exclusão da categoria ${categoryId} cancelada.`); // Log
+  }
+};
 
 
   return (
@@ -91,7 +125,13 @@ function CategoryManagementPage() {
                <span>{category.name} (ID: {category.id})</span>
                <div>
                  <button disabled style={{ marginLeft: '10px', fontStyle: 'italic', cursor: 'not-allowed' }}>Editar</button>
-                 <button disabled style={{ marginLeft: '10px', fontStyle: 'italic', cursor: 'not-allowed' }}>Excluir</button>
+                 <button 
+                    onClick={() => handleDeleteCategory(category.id, category.name)}
+                    style={{ marginLeft: '10px', cursor: 'pointer', color: 'red', border: '1px solid red', background: 'transparent', borderRadius: '3px' }}
+                    title={`Excluir categoria ${category.name}`}
+                >
+                    Excluir
+                </button>
                </div>
              </li>
            ))}
