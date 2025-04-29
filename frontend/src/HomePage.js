@@ -123,9 +123,9 @@ function HomePage() {
 
       {!loading && !error && summaryData && (
         <VStack spacing={8} align="stretch">
-                   <Box borderWidth={1} borderRadius="lg" boxShadow="base" p={6} bg="white">
+            <Box borderWidth={1} borderRadius="lg" boxShadow="base" p={6} bg="white">
              <Heading as="h3" size="md" mb={4}>Resumo de {summaryData.summary_period_label || 'Mês Atual'}</Heading>
-             <StatGroup>
+             <SimpleGrid columns={{ base: 1, md: 2 }} spacing={{ base:4, md: 6 }} >
                 <Stat>
                    <StatLabel fontSize="md">Total Gasto no Mês</StatLabel>
                    <StatNumber
@@ -179,7 +179,7 @@ function HomePage() {
                      </StatHelpText>
                   </Stat>
                 )}
-             </StatGroup>
+             </SimpleGrid>
           </Box>
 
           <Box borderWidth={1} borderRadius="lg" boxShadow="base" p={6} bg="white">
