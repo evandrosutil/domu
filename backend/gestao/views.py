@@ -1,3 +1,4 @@
+from collections import defaultdict
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -35,31 +36,65 @@ class ExpenseSummaryView(APIView):
     - Total by category
     """
     def get(self, request, format=None):
-        monthly_summary_query = Expense.objects \
-            .annotate(month=TruncMonth('date')) \
-            .values('month') \
+
+        monthly_category_query = Expense.objects \
+            .annotate(month=TruncMonth('date'),
+                      # Agrupa nulos como 'Sem Categoria'
+                      category_name_agg=Coalesce('category__name', Value('Sem Categoria'))) \
+            .values('month', 'category_name_agg') \
             .annotate(total=Sum('amount')) \
-            .values('month', 'total') \
-            .order_by('month')
+            .values('month', 'category_name_agg', 'total') \
+            .order_by('month', 'category_name_agg') # Ordena para processamento
 
-        monthly_labels = [item['month'].strftime('%Y-%m') for item in monthly_summary_query]
-        monthly_totals = [item['total'] or 0 for item in monthly_summary_query]
+        datasets_by_category = defaultdict(lambda: defaultdict(float))
+        all_months_set = set()
+        all_categories_set = set()
 
-        monthly_summary_data = {
-            'labels': monthly_labels,
-            'totals': monthly_totals
+        for item in monthly_category_query:
+            # Ignora itens sem mês (não deveria acontecer com TruncMonth)
+            if not item['month']:
+                continue
+            month_str = item['month'].strftime('%Y-%m')
+            category_name = item['category_name_agg']
+            total = float(item['total'] or 0)
+
+            datasets_by_category[category_name][month_str] = total
+            all_months_set.add(month_str)
+            all_categories_set.add(category_name)
+
+        sorted_months = sorted(list(all_months_set))
+        sorted_categories = sorted(list(all_categories_set))
+
+        chartjs_datasets = []
+        colors = [
+          'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)', 'rgba(255, 206, 86, 0.7)',
+          'rgba(75, 192, 192, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
+          'rgba(199, 199, 199, 0.7)', 'rgba(83, 102, 255, 0.7)'
+        ]
+        color_index = 0
+        for category in sorted_categories:
+            # Para cada categoria, cria uma lista de valores para cada mês (0 se não houver gasto)
+            data_points = [datasets_by_category[category].get(month, 0) for month in sorted_months]
+            chartjs_datasets.append({
+                'label': category, # Nome da categoria vai na legenda
+                'data': data_points,
+                'backgroundColor': colors[color_index % len(colors)], # Pega uma cor da paleta
+            })
+            color_index += 1
+
+        stacked_monthly_summary_data = {
+            'labels': sorted_months, # Meses no eixo X
+            'datasets': chartjs_datasets # Um dataset por categoria
         }
 
         category_summary_query = Expense.objects \
-            .annotate(
-                category_name_agg=Coalesce('category__name', Value('Sem Categoria'))
-            ) \
-            .values('category_name_agg') \
+            .annotate(cat_name=Coalesce('category__name', Value('Sem Categoria'))) \
+            .values('cat_name') \
             .annotate(total=Sum('amount')) \
-            .values('category_name_agg', 'total') \
+            .values('cat_name', 'total') \
             .order_by('-total')
 
-        category_labels = [item['category_name_agg'] for item in category_summary_query]
+        category_labels = [item['cat_name'] for item in category_summary_query]
         category_totals = [item['total'] or 0 for item in category_summary_query]
 
         category_summary_data = {
@@ -68,8 +103,8 @@ class ExpenseSummaryView(APIView):
         }
 
         combined_data = {
-            'monthly_summary':  monthly_summary_data,
-            'category_summary': category_summary_data
+            'stacked_monthly_summary': stacked_monthly_summary_data,
+            'category_summary': category_summary_data # Mantém o de pizza
         }
-            
+
         return Response(combined_data)
