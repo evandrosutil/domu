@@ -1,9 +1,11 @@
+from decimal import Decimal
 from collections import defaultdict
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Sum, Value
+from django.db.models import Sum, Q, Value, DecimalField
 from django.db.models.functions import TruncMonth, Coalesce
+from django.utils import timezone
 
 from .models import Expense, Category
 from .serializers import ExpenseSerializer, CategorySerializer
@@ -108,3 +110,30 @@ class ExpenseSummaryView(APIView):
         }
 
         return Response(combined_data)
+
+class HomePageSummaryView(APIView):
+    """
+    API View to retrieve summary data for logged home page.
+    """
+    def get(self, request, format=None):
+        now = timezone.now()
+        current_month = now.month
+        current_year = now.year
+
+        total_this_month = Expense.objects.filter(
+            date__year=current_year,
+            date__month=current_month
+        ).aggregate(
+            total=Coalesce(Sum('amount', output_field=DecimalField()), Decimal('0.00'))
+        )['total']
+
+        recent_expenses_qs = Expense.objects.all().order_by('-date', '-pk')[:5]
+        recent_expenses_serializer = ExpenseSerializer(recent_expenses_qs, many=True)
+
+        data = {
+            'summary_period_label': now.strftime('%m/%Y'),
+            'current_month_total': total_this_month,
+            'recent_expenses': recent_expenses_serializer.data
+        }
+
+        return Response(data)

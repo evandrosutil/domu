@@ -4,7 +4,8 @@ from .views import (
     ExpenseSummaryView, 
     ExpenseRetrieveUpdateDestroyAPIView,
     CategoryListCreateView,
-    CategoryRetrieveUpdateDestroyView
+    CategoryRetrieveUpdateDestroyView,
+    HomePageSummaryView
 )
 
 urlpatterns = [
@@ -13,5 +14,6 @@ urlpatterns = [
     path("expenses/<int:pk>/", ExpenseRetrieveUpdateDestroyAPIView.as_view(), name="expense-detail"),
 
     path("categories/", CategoryListCreateView.as_view(), name="category-list"),
-    path('categories/<int:pk>/', CategoryRetrieveUpdateDestroyView.as_view(), name='category-detail'),
+    path("categories/<int:pk>/", CategoryRetrieveUpdateDestroyView.as_view(), name="category-detail"),
+    path("homepage-summary/",  HomePageSummaryView.as_view(), name="homepage-summary"),
 ]
