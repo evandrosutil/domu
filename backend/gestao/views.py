@@ -1,9 +1,10 @@
+import datetime
 from decimal import Decimal
 from collections import defaultdict
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from django.db.models import Sum, Q, Value, DecimalField
+from django.db.models import Sum, Value, DecimalField
 from django.db.models.functions import TruncMonth, Coalesce
 from django.utils import timezone
 
@@ -120,6 +121,11 @@ class HomePageSummaryView(APIView):
         current_month = now.month
         current_year = now.year
 
+        first_day_current_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        last_day_previous_month = first_day_current_month - datetime.timedelta(days=1)
+        previous_month = last_day_previous_month.month
+        previous_month_year = last_day_previous_month.year
+
         total_this_month = Expense.objects.filter(
             date__year=current_year,
             date__month=current_month
@@ -127,12 +133,31 @@ class HomePageSummaryView(APIView):
             total=Coalesce(Sum('amount', output_field=DecimalField()), Decimal('0.00'))
         )['total']
 
+        total_previous_month = Expense.objects.filter(
+            date__year=previous_month_year,
+            date__month=previous_month
+        ).aggregate(
+             total=Coalesce(Sum('amount', output_field=DecimalField()), Decimal('0.00'))
+        )['total']
+
+        top_category_this_month_data = Expense.objects.filter(
+            date__year=current_year,
+            date__month=current_month,
+            category__isnull=False
+        ).values(
+            'category__name'
+        ).annotate(
+            total=Sum('amount')
+        ).order_by('-total').first()
+
         recent_expenses_qs = Expense.objects.all().order_by('-date', '-pk')[:5]
         recent_expenses_serializer = ExpenseSerializer(recent_expenses_qs, many=True)
 
         data = {
             'summary_period_label': now.strftime('%m/%Y'),
             'current_month_total': total_this_month,
+            'previous_month_total': total_previous_month,
+            'top_category_current_month': top_category_this_month_data,
             'recent_expenses': recent_expenses_serializer.data
         }
 
