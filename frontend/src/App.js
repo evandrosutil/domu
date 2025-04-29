@@ -31,6 +31,9 @@ function App() {
             bg="teal.600"
             color="white"
             marginBottom="20px"
+            position="sticky"
+            top="0"
+            zIndex="sticky"
         >
             <Flex align="center" mr={5}>
                 <ChakraLink as={ReactRouterLink} to="/" _hover={{ textDecoration: 'none' }}>
@@ -41,9 +44,6 @@ function App() {
             </Flex>
 
         <Box display={{ base: 'none', md: 'flex' }} alignItems="center">
-             <ChakraLink as={ReactRouterLink} to="/" mr={4} _hover={{ color: 'teal.100' }}>
-                Home
-            </ChakraLink>
             {auth.isAuthenticated && (
                 <>
                     <ChakraLink as={ReactRouterLink} to="/expenses" mr={4} _hover={{ color: 'teal.100' }}>
