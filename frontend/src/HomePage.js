@@ -6,8 +6,9 @@ import {
   Box, Heading, Text, Spinner, Center, Alert, AlertIcon, AlertDescription, VStack, HStack,
   Stat, StatArrow, StatLabel, StatNumber, StatHelpText, StatGroup,
   Table, Thead, Tbody, Tr, Th, Td, Link as ChakraLink,
-  Button 
+  Button, SimpleGrid, Icon
 } from '@chakra-ui/react';
+import { FaDollarSign, FaChartPie, FaCloudUploadAlt } from 'react-icons/fa';
 
 function HomePage() {
   const { isAuthenticated } = useAuth();
@@ -48,20 +49,56 @@ function HomePage() {
 
 
   if (!isAuthenticated) {
-    return (
-      <Box textAlign="center" py={10} px={6}>
-        <Heading as="h2" size="xl" mt={6} mb={2}>
-          Bem-vindo ao Domu!
-        </Heading>
-        <Text color={'gray.500'} mb={6}>
-          Sua plataforma de gestão simplificada. Faça o login para acessar seus dados.
-        </Text>
-        <ChakraLink as={ReactRouterLink} to="/login">
-            <Button colorScheme="teal" variant="solid" size="lg">
-                Ir para Login
-            </Button>
-        </ChakraLink>
-      </Box>
+   return (
+      <VStack spacing={{ base: 8, md: 12 }} py={{ base: 10, md: 16 }} px={6} textAlign="center">
+
+        <Box maxW="2xl"> 
+          <Heading as="h2" size="2xl" mt={6} mb={4} color="teal.500"> 
+            Simplifique a Gestão do seu Condomínio com Domu!
+          </Heading>
+          <Text fontSize={{base: "lg", md:"xl"}} color={'gray.600'} mb={8}>
+            Organize despesas, visualize relatórios e tenha controle financeiro de forma fácil e acessível de onde estiver.
+          </Text>
+          <ChakraLink as={ReactRouterLink} to="/login" _hover={{ textDecoration: 'none' }}>
+              <Button colorScheme="teal" variant="solid" size="lg" px={10} py={6} fontSize="lg">
+                  Acessar Minha Conta
+              </Button>
+          </ChakraLink>
+        </Box>
+
+        <Box py={10} width="100%" maxW="5xl"> 
+             <Heading as="h3" size="lg" mb={10}>Recursos Principais</Heading> 
+             <SimpleGrid columns={{ base: 1, md: 3 }} spacing={10}>
+                <Box p={6} shadow="md" borderWidth="1px" borderRadius="lg" bg="white"> 
+                   <Center color="teal.500" mb={4}>
+                       <Icon as={FaDollarSign} w={12} h={12} />
+                   </Center>
+                   <Heading fontSize="xl" mb={2} textAlign="center">Controle de Despesas</Heading>
+                   <Text color={'gray.600'} textAlign="center">
+                     Registre e categorize todas as suas despesas de forma rápida e organizada.
+                   </Text>
+                </Box>
+                <Box p={6} shadow="md" borderWidth="1px" borderRadius="lg" bg="white">
+                   <Center color="teal.500" mb={4}>
+                       <Icon as={FaChartPie} w={12} h={12} />
+                    </Center>
+                   <Heading fontSize="xl" mb={2} textAlign="center">Análise Visual</Heading>
+                   <Text color={'gray.600'} textAlign="center">
+                     Gráficos mensais e por categoria para entender para onde vai o dinheiro.
+                   </Text>
+                </Box>
+                <Box p={6} shadow="md" borderWidth="1px" borderRadius="lg" bg="white">
+                   <Center color="teal.500" mb={4}>
+                       <Icon as={FaCloudUploadAlt} w={12} h={12} />
+                   </Center>
+                   <Heading fontSize="xl" mb={2} textAlign="center">Acesso Online</Heading>
+                   <Text color={'gray.600'} textAlign="center">
+                     Seus dados seguros e acessíveis de qualquer dispositivo conectado.
+                   </Text>
+                </Box>
+             </SimpleGrid>
+        </Box>
+      </VStack>
     );
   }
 
