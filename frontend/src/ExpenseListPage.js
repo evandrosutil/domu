@@ -1,153 +1,146 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import ExpenseForm from './ExpenseForm';
-import './App.css';
-// Importar CSS se houver estilos específicos, ou usar App.css global
-// import './ExpenseListPage.css';
+import {
+  Box, Heading, Table, Thead, Tbody, Tr, Th, Td, IconButton, Button,
+  useToast, Text, Alert, AlertIcon, AlertDescription, Spinner, Center, HStack,
+  Modal, ModalOverlay, ModalContent, ModalHeader, ModalFooter, ModalBody, ModalCloseButton,
+  useDisclosure
+} from '@chakra-ui/react';
+import { EditIcon, DeleteIcon, AddIcon } from '@chakra-ui/icons';
 
 function ExpenseListPage() {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState(null);
+  const { isOpen: isEditModalOpen, onOpen: onEditModalOpen, onClose: onEditModalClose } = useDisclosure();
+
+  const toast = useToast();
 
   const fetchExpenses = useCallback(async () => {
-    try {
-      setLoading(true);
-      const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/expenses/`;
-      const response = await axios.get(apiUrl);
-      setExpenses(response.data);
-      setError(null);
-    } catch (err) {
-      console.error("Erro ao buscar despesas:", err);
-      setError("Falha ao carregar despesas.");
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true); setError(null); try { const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/expenses/`; const response = await axios.get(apiUrl); setExpenses(response.data.results || response.data || []); } catch (err) { console.error("Erro ao buscar despesas:", err); setError("Falha ao carregar despesas."); setExpenses([]); } finally { setLoading(false); }
   }, []);
-
-  useEffect(() => {
-    fetchExpenses();
-  }, [fetchExpenses]);
+  useEffect(() => { fetchExpenses(); }, [fetchExpenses]);
 
   const handleExpenseAdded = (newExpense) => {
     setExpenses(prevExpenses => [newExpense, ...prevExpenses]);
-    // Poderia adicionar feedback visual aqui
+    toast({ title: "Despesa adicionada!", status: "success", duration: 3000, isClosable: true, position: "top-right" });
   };
 
   const handleDeleteExpense = async (expenseId) => {
-    if (window.confirm(`Tem certeza que deseja excluir a despesa ID ${expenseId}? Esta ação não pode ser desfeita.`)) {
-      try {
-        const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/expenses/${expenseId}/`;
-        const response = await axios.delete(apiUrl);
-
-        if (response.status === 204) {
-          setExpenses(prevExpenses => prevExpenses.filter(exp => exp.id !== expenseId));
-          setError(null);
-        } else {
-          console.warn(`API retornou status ${response.status} para exclusão da despesa ${expenseId}`);
-          setError(`Recebido status inesperado ${response.status} ao excluir.`);
-        }
-      } catch (err) {
-        console.error(`Erro ao excluir despesa ${expenseId}:`, err.response || err.message || err);
-        const errorMsg = err.response?.data ? JSON.stringify(err.response.data) : `Falha ao excluir despesa ${expenseId}. Verifique o console.`;
-        setError(errorMsg);
-      }
-    } else {
-      console.log(`Exclusão da despesa ${expenseId} cancelada pelo usuário.`);
+    if (window.confirm(`Tem certeza que deseja excluir a despesa ID ${expenseId}?`)) {
+       try {
+           const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/expenses/${expenseId}/`;
+           await axios.delete(apiUrl);
+           setExpenses(prevExpenses => prevExpenses.filter(exp => exp.id !== expenseId));
+           toast({ title: "Despesa excluída!", status: "warning", duration: 3000, isClosable: true, position: "top-right" });
+       } catch (err) {
+           console.error(`Erro ao excluir despesa ${expenseId}:`, err.response || err); let errorMsg = `Falha ao excluir despesa ${expenseId}.`; if (err.response?.data && typeof err.response.data === 'object') { try { errorMsg += ' Detalhes: ' + Object.entries(err.response.data).map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(', ') : value}`).join('; '); } catch (e) { errorMsg += ' Detalhes: ' + JSON.stringify(err.response.data); } } else if (err.response?.data) { errorMsg += ' Detalhes: ' + err.response.data; } setError(errorMsg);
+           toast({ title: "Erro ao excluir", description: errorMsg, status: "error", duration: 5000, isClosable: true, position: "top-right" });
+       }
     }
   };
 
   const handleOpenEditModal = (expense) => {
     setEditingExpense(expense);
-    setIsEditModalOpen(true);
+    onEditModalOpen();
   };
 
-  const handleCloseEditModal = () => {
-    setIsEditModalOpen(false);
-    setEditingExpense(null);
-  };
-
+  
   const handleUpdateExpense = (updatedExpense) => {
-    setExpenses(prevExpenses =>
-      prevExpenses.map(expense =>
-        expense.id === updatedExpense.id ? updatedExpense : expense
-      )
-    );
-    handleCloseEditModal();
+    setExpenses(prevExpenses => prevExpenses.map(expense => expense.id === updatedExpense.id ? updatedExpense : expense ));
+    onEditModalClose(); 
+    setEditingExpense(null); 
+    toast({ title: "Despesa atualizada!", status: "success", duration: 3000, isClosable: true, position: "top-right" });
   };
 
+  
   return (
-    <div>
-      <h2>Despesas</h2>
+    <Box p={{ base: 4, md: 6 }} maxW="1200px" mx="auto"> 
+      <Heading as="h2" size="lg" mb={6} textAlign="center">
+        Gerenciar Despesas
+      </Heading>
 
-      <ExpenseForm onExpenseAdded={handleExpenseAdded} />
+      <Box p={5} borderWidth={1} borderRadius="lg" boxShadow="sm" mb={8} bg="white">
+         <Heading as="h4" size="md" mb={4}>Adicionar Nova Despesa</Heading>
+         <ExpenseForm onExpenseAdded={handleExpenseAdded} />
+      </Box>
 
-      <hr style={{ margin: '20px 0' }} />
-
-      <h3>Despesas Registradas</h3>
-
-      {loading && <p>Carregando despesas...</p>}
-
-      {error && <p style={{ color: 'red' }}>Erro: {error}</p>}
-
+      <Heading as="h3" size="md" mb={4}>Despesas Registradas</Heading>
+      {loading && <Center py={10}><Spinner color="teal.500" size="xl" /></Center>}
+      {error && (
+        <Alert status="error" borderRadius="md">
+          <AlertIcon />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
       {!loading && !error && expenses.length > 0 ? (
-        <ul style={{ listStyle: 'none', padding: 0 }}>
-          {expenses.map(expense => (
-            <li key={expense.id} style={{ borderBottom: '1px solid #eee', padding: '10px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <strong>{expense.description}</strong>
-                {expense.category_name && (
-                  <span style={{ fontStyle: 'italic', marginLeft: '8px', color: '#555' }}>
-                    (Categoria: {expense.category_name})
-                  </span>
-                )}
-                <span style={{ marginLeft: '8px' }}>
-                - R$ {parseFloat(expense.amount).toFixed(2)} 
-                </span>
-                <span style={{ marginLeft: '8px' }}>
-                - {new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}
-                </span>
-              </div>
-              <div>
-                <button
-                  onClick={() => handleOpenEditModal(expense)}
-                  style={{ marginLeft: '10px', cursor: 'pointer', color: 'green', border:'1px solid green', borderRadius:'3px', background: 'transparent' }}
-                  title={`Editar despesa ID ${expense.id}`}
-                >
-                  Editar
-                </button>
-                <button
-                  onClick={() => handleDeleteExpense(expense.id)}
-                  style={{ marginLeft: '10px', cursor: 'pointer', color: 'red', border:'1px solid red', borderRadius:'3px', background: 'transparent' }}
-                  title={`Excluir despesa ID ${expense.id}`}
-                >
-                  Excluir
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <Box borderWidth={1} borderRadius="lg" boxShadow="sm" bg="white" overflowX="auto">
+          <Table variant="simple" size="md">
+            <Thead bg="gray.100">
+              <Tr>
+                <Th>Descrição</Th>
+                <Th>Categoria</Th>
+                <Th isNumeric>Valor (R$)</Th>
+                <Th>Data</Th>
+                <Th>Ações</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {expenses.map(expense => (
+                <Tr key={expense.id} _hover={{ bg: "gray.50" }}>
+                  <Td>{expense.description}</Td>
+                  <Td>{expense.category_name || '-'}</Td> 
+                  <Td isNumeric>{parseFloat(expense.amount).toFixed(2)}</Td>
+                  <Td>{new Date(expense.date + 'T00:00:00').toLocaleDateString('pt-BR')}</Td>
+                  <Td>
+                    <HStack spacing={2}>
+                      <IconButton
+                        aria-label={`Editar despesa ${expense.description}`}
+                        icon={<EditIcon />}
+                        colorScheme="yellow"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenEditModal(expense)}
+                      />
+                      <IconButton
+                        aria-label={`Excluir despesa ${expense.description}`}
+                        icon={<DeleteIcon />}
+                        colorScheme="red"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteExpense(expense.id)} 
+                      />
+                    </HStack>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </Box>
       ) : (
-        !loading && !error && <p>Nenhuma despesa registrada ainda.</p> // Mensagem se vazio
+        !loading && !error && <Text color="gray.500" mt={4}>Nenhuma despesa registrada.</Text>
       )}
 
-      {isEditModalOpen && editingExpense && (
-         <div className="modal-overlay" onClick={handleCloseEditModal}>
-           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <h2>Editar Despesa</h2>
-              <ExpenseForm
-                initialData={editingExpense}
-                onExpenseUpdated={handleUpdateExpense}
-              />
-              <button onClick={handleCloseEditModal} style={{ marginTop: '10px', marginRight: '10px' }}>
-                Cancelar
-              </button>
-           </div>
-         </div>
-      )}
-    </div>
+      <Modal isOpen={isEditModalOpen} onClose={() => { setEditingExpense(null); onEditModalClose(); }} isCentered>
+         <ModalOverlay />
+         <ModalContent> 
+            <ModalHeader>Editar Despesa (ID: {editingExpense?.id})</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody pb={6}>
+               <ExpenseForm
+                 initialData={editingExpense}
+                 onExpenseUpdated={handleUpdateExpense}
+               />
+            </ModalBody>
+            <ModalFooter>
+              <Button onClick={onEditModalClose}>Cancelar</Button>
+            </ModalFooter>
+         </ModalContent>
+      </Modal>
+
+    </Box> 
   );
 }
 

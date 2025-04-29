@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ChakraProvider } from '@chakra-ui/react';
 import axios from 'axios';
 
 axios.interceptors.request.use(
@@ -25,11 +26,13 @@ axios.interceptors.request.use(
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+     <BrowserRouter>
+       <ChakraProvider>
+         <AuthProvider>
+           <App />
+         </AuthProvider>
+       </ChakraProvider>
+     </BrowserRouter>
   </React.StrictMode>
 );
 

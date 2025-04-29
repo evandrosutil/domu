@@ -99,3 +99,7 @@
     color: white;
     border-color: #4CAF50;
 }
+
+select#expense-category option {
+    background-color: white !important;
+}
